@@ -49,7 +49,8 @@ class WorkerWrapper {
             else if (msg.type === 'levelResult') {
                 const p = this.pendingPlay;
                 this.pendingPlay = null;
-                p?.resolve(msg.result);
+                if (p)
+                    p.resolve(msg.result);
             }
             else if (msg.type === 'replayActions') {
                 this.replayResolvers.splice(0).forEach((r) => r(msg.data));
@@ -58,7 +59,8 @@ class WorkerWrapper {
         this.worker.on('error', (err) => {
             const p = this.pendingPlay;
             this.pendingPlay = null;
-            p?.reject(err);
+            if (p)
+                p.reject(err);
         });
     }
     sendInit(config) {

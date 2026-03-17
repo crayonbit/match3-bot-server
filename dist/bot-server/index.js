@@ -46,9 +46,9 @@ const BotManagerUtils_1 = require("../src/Core/Bot/BotManagerUtils");
 const app = (0, express_1.default)();
 // CORS — restrict origins via ALLOWED_ORIGINS env var (comma-separated).
 // Defaults to all origins in development; lock this down in production.
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map((o) => o.trim());
+const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()) : null;
 app.use((0, cors_1.default)({
-    origin: allowedOrigins ?? true,
+    origin: allowedOrigins !== null ? allowedOrigins : true,
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
 }));

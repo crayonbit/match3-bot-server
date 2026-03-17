@@ -47,9 +47,14 @@ export interface IBotManager {
     /** Use to poll for results - returns partial results during processing, completed result when done, or null if not found */
     getResults(configId: string): Promise<BotResult | null>;
 }
+export type ManagerWithLoad = {
+    manager: IBotManager;
+    /** Load percentage (0-1). E.g., 0.4 means this manager processes 40% of the total levels */
+    load: number;
+};
 export type BotProps = {
     coreConfig: CoreConfig;
-    manager: IBotManager;
+    managers: ManagerWithLoad[];
     getDecisionWeights: () => BotDecisionWeights;
     getBombStrategyPercent: () => number;
     getUsePreBoosters: () => boolean;
