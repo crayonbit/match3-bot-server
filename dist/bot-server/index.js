@@ -44,11 +44,23 @@ const os = __importStar(require("os"));
 const WorkerPool_1 = require("./WorkerPool");
 const BotManagerUtils_1 = require("../src/Core/Bot/BotManagerUtils");
 const app = (0, express_1.default)();
+const normalizeOrigin = (origin) => origin.replace(/\/+$/, '');
 // CORS — restrict origins via ALLOWED_ORIGINS env var (comma-separated).
 // Defaults to all origins in development; lock this down in production.
-const allowedOrigins = process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()) : null;
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+        .map(normalizeOrigin)
+    : null;
 app.use((0, cors_1.default)({
-    origin: allowedOrigins !== null ? allowedOrigins : true,
+    origin: (requestOrigin, callback) => {
+        if (!requestOrigin || allowedOrigins === null) {
+            callback(null, true);
+            return;
+        }
+        callback(null, allowedOrigins.includes(normalizeOrigin(requestOrigin)));
+    },
     methods: ['GET', 'POST'],
     allowedHeaders: ['Content-Type'],
 }));
