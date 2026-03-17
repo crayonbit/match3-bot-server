@@ -1,0 +1,1 @@
+{"version":3,"file":"TickGeneratorsManagerSignals.js","sourceRoot":"","sources":["../../../../../src/Core/TickGenerator/TickGeneratorsManagerSignals.ts"],"names":[],"mappings":";;;AAAA,qCAAiC;AACjC,8DAA2D;AAO3D,MAAa,4BAA6B,SAAQ,uCAAmD;IACnG;QACE,KAAK,CAAC;YACJ,aAAa,EAAE,IAAI,gBAAM,EAAE;YAC3B,kBAAkB,EAAE,IAAI,gBAAM,EAAE;SACjC,CAAC,CAAC;IACL,CAAC;CACF;AAPD,oEAOC"}

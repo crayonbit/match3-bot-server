@@ -1,0 +1,1 @@
+{"version":3,"file":"TickStepsSignals.js","sourceRoot":"","sources":["../../../../../src/Core/TickGenerator/TickStepsSignals.ts"],"names":[],"mappings":";;;AAAA,qCAAiC;AAGjC,8DAA2D;AAO3D,MAAa,gBAAiB,SAAQ,uCAAsC;IAC1E;QACE,KAAK,CAAC;YACJ,cAAc,EAAE,IAAI,gBAAM,EAAE;YAC5B,cAAc,EAAE,IAAI,gBAAM,EAAE;SAC7B,CAAC,CAAC;IACL,CAAC;CACF;AAPD,4CAOC"}

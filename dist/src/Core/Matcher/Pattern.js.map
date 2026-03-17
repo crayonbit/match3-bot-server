@@ -1,0 +1,1 @@
+{"version":3,"file":"Pattern.js","sourceRoot":"","sources":["../../../../../src/Core/Matcher/Pattern.ts"],"names":[],"mappings":";;;AAGA,MAAsB,OAAO;IAOpB,IAAI,CAAC,KAAmB;QAC7B,IAAI,CAAC,KAAK,GAAG,KAAK,CAAC,KAAK,CAAC;QACzB,IAAI,CAAC,eAAe,GAAG,KAAK,CAAC,eAAe,CAAC;IAC/C,CAAC;IAIM,mBAAmB,CAAC,MAAS,EAAE,OAAgB;QACpD,OAAO,IAAI,CAAC;IACd,CAAC;CAGF;AAnBD,0BAmBC"}
