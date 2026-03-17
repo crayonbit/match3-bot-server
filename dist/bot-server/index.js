@@ -172,7 +172,7 @@ app.use((err, _req, res, _next) => {
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`Bot server listening on port ${PORT} — ${workerPool.size} worker thread(s) ready`);
 });
 // Graceful shutdown (SIGTERM is sent by ECS/ALB during rolling deployments)
