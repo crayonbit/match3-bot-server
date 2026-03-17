@@ -63,6 +63,13 @@ const jobs = new Map();
 // Routes
 // ---------------------------------------------------------------------------
 /**
+ * GET /health
+ * Health check endpoint for load balancer
+ */
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
+/**
  * POST /bot/play
  *
  * Starts a bot run and returns a configId.
