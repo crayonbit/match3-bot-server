@@ -106,7 +106,6 @@ app.post('/bot/play', async (req, res, next) => {
             resultsPerSeed: {},
             completedTasks: 0,
             totalTasks: 0,
-            replayActions: {},
         });
         void runBotJob(configId, config);
         res.json({ configId });
@@ -152,7 +151,7 @@ app.delete('/bot/sessions', (_req, res) => {
  * Returns partial results with progress while processing,
  * then the full BotCompletedResult once done, or null if not found.
  */
-app.get('/bot/results/:configId', (req, res) => {
+app.get('/bot/results/:configId', async (req, res) => {
     const { configId } = req.params;
     const job = jobs.get(configId);
     if (!job) {
@@ -161,12 +160,13 @@ app.get('/bot/results/:configId', (req, res) => {
     }
     // Return partial results while processing
     if (!job.done) {
+        const replayActions = await getMergedReplayActions();
         const partialResult = {
             kind: 'partial',
             resultsPerSeed: job.resultsPerSeed,
             completedTasks: job.completedTasks,
             totalTasks: job.totalTasks,
-            replayActions: job.replayActions,
+            replayActions,
         };
         res.json(partialResult);
         return;
@@ -255,13 +255,12 @@ async function runBotJob(configId, config) {
             if (!task) {
                 return Promise.resolve();
             }
-            return workerPool.playLevel(task).then(async (result) => {
+            return workerPool.playLevel(task).then((result) => {
                 resultsPerSeed[task.levelSeed] = resultsPerSeed[task.levelSeed] || [];
                 resultsPerSeed[task.levelSeed].push(result);
                 // Update job progress
                 job.resultsPerSeed = resultsPerSeed;
                 job.completedTasks++;
-                job.replayActions = await getMergedReplayActions();
                 return runWorkerQueue();
             });
         };
@@ -275,7 +274,6 @@ async function runBotJob(configId, config) {
             resultsPerSeed,
             completedTasks: job.completedTasks,
             totalTasks: job.totalTasks,
-            replayActions,
         });
     }
     catch (error) {
@@ -286,7 +284,6 @@ async function runBotJob(configId, config) {
             resultsPerSeed: {},
             completedTasks: 0,
             totalTasks: 0,
-            replayActions: {},
             error: error instanceof Error ? error : new Error(String(error)),
         });
     }
