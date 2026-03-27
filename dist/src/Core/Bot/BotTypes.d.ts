@@ -17,6 +17,7 @@ export type BotPartialResult = {
     resultsPerSeed: Record<number, LevelResult[]>;
     completedTasks: number;
     totalTasks: number;
+    replayActions: BotReplayActions;
 };
 /**
  * @property {Range} winRatesRange - Min/Max average win rate among all level seeds
@@ -34,6 +35,23 @@ export type BotCompletedResult = {
     kind: 'completed';
 } & BotCompletedResultBase;
 export type BotResult = BotPartialResult | BotCompletedResult;
+export type BotSessionStartData = {
+    sessions: BotManagerSession[];
+    totalTasks: number;
+};
+export type BotManagerWithConfig = {
+    manager: IBotManager;
+    config: BotManagerPlayConfig;
+};
+export type BotManagerWithActiveConfig = BotManagerWithConfig & {
+    configId: string;
+};
+export type BotManagerWithConfigId = Omit<BotManagerWithActiveConfig, 'config'>;
+export type BotManagerSession = {
+    configId: string;
+    managerId: string;
+    playConfig: BotManagerPlayConfig;
+};
 export type BotManagerPlayConfig = {
     coreConfig: CoreConfig;
     decisionWeights: BotDecisionWeights;
@@ -41,16 +59,20 @@ export type BotManagerPlayConfig = {
     usePreBoosters: boolean;
 } & BotPlayProps;
 export interface IBotManager {
+    readonly id: string;
     play(config: BotManagerPlayConfig): Promise<{
         configId: string;
     }>;
     /** Use to poll for results - returns partial results during processing, completed result when done, or null if not found */
     getResults(configId: string): Promise<BotResult | null>;
+    terminateSession(configId: string): Promise<void>;
+    terminateAllSessions(): Promise<void>;
+    resumeSession(sessionData: BotManagerSession, partialResult: BotPartialResult): Promise<void>;
 }
 export type ManagerWithLoad = {
     manager: IBotManager;
     /** Load percentage (0-1). E.g., 0.4 means this manager processes 40% of the total levels */
-    load: number;
+    getLoad: () => number;
 };
 export type BotProps = {
     coreConfig: CoreConfig;
@@ -62,6 +84,8 @@ export type BotProps = {
     onLevelFailed?: (result: BaseLevelResult) => void;
     onBotCompleted?: (result: BotCompletedResult) => void;
     onBotProgress?: (result: BotPartialResult) => void;
+    onSessionStarted?: (sessions: BotManagerSession[], totalTasks: number) => void;
+    onSessionResultsUpdated?: (result: BotPartialResult) => void;
 };
 export type CascadingData = MoveCells & {
     goalsCollected: number;

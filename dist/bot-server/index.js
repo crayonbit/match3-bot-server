@@ -61,7 +61,7 @@ app.use((0, cors_1.default)({
         }
         callback(null, allowedOrigins.includes(normalizeOrigin(requestOrigin)));
     },
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'DELETE'],
     allowedHeaders: ['Content-Type'],
 }));
 app.use(express_1.default.json({ limit: '10mb' }));
@@ -101,10 +101,12 @@ app.post('/bot/play', async (req, res, next) => {
         const configId = (0, crypto_1.randomUUID)();
         jobs.set(configId, {
             done: false,
+            cancelled: false,
             result: null,
             resultsPerSeed: {},
             completedTasks: 0,
             totalTasks: 0,
+            replayActions: {},
         });
         void runBotJob(configId, config);
         res.json({ configId });
@@ -112,6 +114,36 @@ app.post('/bot/play', async (req, res, next) => {
     catch (error) {
         next(error);
     }
+});
+/**
+ * DELETE /bot/sessions/:configId
+ *
+ * Cancel a running bot session. The background job will stop dispatching new
+ * tasks after the currently-executing worker tasks finish.
+ * Returns 204 on success, 404 if the session does not exist.
+ */
+app.delete('/bot/sessions/:configId', (req, res) => {
+    const { configId } = req.params;
+    const job = jobs.get(configId);
+    if (!job) {
+        res.status(404).json({ error: 'Session not found' });
+        return;
+    }
+    job.cancelled = true;
+    res.status(204).send();
+});
+/**
+ * DELETE /bot/sessions
+ *
+ * Cancel all running bot sessions.
+ * Returns 204 on success.
+ */
+app.delete('/bot/sessions', (_req, res) => {
+    for (const job of jobs.values()) {
+        job.cancelled = true;
+    }
+    jobs.clear();
+    res.status(204).send();
 });
 /**
  * GET /bot/results/:configId
@@ -134,6 +166,7 @@ app.get('/bot/results/:configId', (req, res) => {
             resultsPerSeed: job.resultsPerSeed,
             completedTasks: job.completedTasks,
             totalTasks: job.totalTasks,
+            replayActions: job.replayActions,
         };
         res.json(partialResult);
         return;
@@ -215,16 +248,20 @@ async function runBotJob(configId, config) {
             return task;
         };
         const runWorkerQueue = () => {
+            if (job.cancelled) {
+                return Promise.resolve();
+            }
             const task = getNextTask();
             if (!task) {
                 return Promise.resolve();
             }
-            return workerPool.playLevel(task).then((result) => {
+            return workerPool.playLevel(task).then(async (result) => {
                 resultsPerSeed[task.levelSeed] = resultsPerSeed[task.levelSeed] || [];
                 resultsPerSeed[task.levelSeed].push(result);
                 // Update job progress
                 job.resultsPerSeed = resultsPerSeed;
                 job.completedTasks++;
+                job.replayActions = await getMergedReplayActions();
                 return runWorkerQueue();
             });
         };
@@ -233,19 +270,23 @@ async function runBotJob(configId, config) {
         const result = (0, BotManagerUtils_1.compileBotCompleteResult)(resultsPerSeed, botStartedAt, replayActions);
         jobs.set(configId, {
             done: true,
-            result,
+            cancelled: job.cancelled,
+            result: job.cancelled ? null : result,
             resultsPerSeed,
             completedTasks: job.completedTasks,
             totalTasks: job.totalTasks,
+            replayActions,
         });
     }
     catch (error) {
         jobs.set(configId, {
             done: true,
+            cancelled: false,
             result: null,
             resultsPerSeed: {},
             completedTasks: 0,
             totalTasks: 0,
+            replayActions: {},
             error: error instanceof Error ? error : new Error(String(error)),
         });
     }
