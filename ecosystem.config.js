@@ -6,7 +6,7 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        ALLOWED_ORIGINS: 'http://localhost:9000,https://meho-tools.tools.sbs.softgames.de',
+        ALLOWED_ORIGINS: 'http://localhost:9000,https://meho-tools.tools.sbs.softgames.de,https://crayonbit.com',
       },
     },
   ],
